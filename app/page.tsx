@@ -15,6 +15,8 @@ import { AddItemDialog } from "@/components/add-item-dialog"
 import { EmbedCodeDialog } from "@/components/embed-code-dialog"
 import type { WaffleItem, WaffleData } from "@/types"
 import { cn } from "@/lib/utils"
+import { LockScreen } from '@/components/lock-screen'
+import { isSessionValid } from '@/lib/access-keys'
 
 const SEED: WaffleItem[] = [
   { id: '1', name: 'ApeXhit FHT', iconUrl: '', link: 'https://apexhit-fht.vercel.app', type: 'app', order: 1, createdAt: '' },
@@ -77,7 +79,7 @@ function ItemCard({
 
 type PublishState = 'idle' | 'publishing' | 'published' | 'error'
 
-export default function WaffleManPage() {
+function WaffleManApp() {
   const [items, setItems] = useState<WaffleItem[]>(SEED)
   const [publishState, setPublishState] = useState<PublishState>('idle')
   const [addOpen, setAddOpen] = useState(false)
@@ -258,4 +260,26 @@ export default function WaffleManPage() {
       <EmbedCodeDialog open={embedOpen} onOpenChange={setEmbedOpen} />
     </div>
   )
+}
+
+export default function WaffleManPage() {
+  const [locked,   setLocked]   = useState(true)
+  const [checking, setChecking] = useState(true)
+
+  useEffect(() => {
+    setLocked(!isSessionValid())
+    setChecking(false)
+  }, [])
+
+  const handleUnlock = useCallback(() => setLocked(false), [])
+
+  if (checking) {
+    return (
+      <div className="fixed inset-0 bg-[#0d1117] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  return locked ? <LockScreen onUnlock={handleUnlock} /> : <WaffleManApp />
 }
