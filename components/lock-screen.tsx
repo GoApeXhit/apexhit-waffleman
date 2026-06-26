@@ -82,6 +82,7 @@ export function LockScreen({ onUnlock }: LockScreenProps) {
                   : 'border-amber-700/50 focus:ring-amber-500/40'
               }`}
               autoFocus
+              autoComplete="off"
             />
             <button
               type="button"
