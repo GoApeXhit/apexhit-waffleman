@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Plus, Zap, Globe, Package, Edit, Trash,
-  CheckCircle, AlertCircle, Loader2, Code, RefreshCw
+  CheckCircle, AlertCircle, Loader2, Code, RefreshCw, Download, Upload
 } from "lucide-react"
 import { WafflePreview } from "@/components/waffle-preview"
 import { AddItemDialog } from "@/components/add-item-dialog"
@@ -122,6 +122,46 @@ function WaffleManApp() {
   const openEdit = useCallback((item: WaffleItem) => { setEditItem(item); setAddOpen(true) }, [])
   const openAdd = useCallback((type: 'app' | 'website') => { setEditItem(null); setAddDefaultType(type); setAddOpen(true) }, [])
 
+  const importInputRef = useRef<HTMLInputElement>(null)
+
+  const handleExport = useCallback(() => {
+    const payload = {
+      app: 'WaffleMan',
+      version: '1',
+      exportedAt: new Date().toISOString(),
+      items,
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    const ts   = new Date().toISOString().replace(/[:T]/g, '-').slice(0, 19)
+    a.href     = url
+    a.download = `waffleman-backup-${ts}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [items])
+
+  const handleImport = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target?.result as string)
+        if (!Array.isArray(data.items)) throw new Error('Invalid backup format')
+        if (confirm(`Restore ${data.items.length} items from backup (${data.exportedAt?.slice(0,10) ?? 'unknown date'})?\n\nThis will replace your current waffle data.`)) {
+          setItems(data.items)
+          setPublishState('idle')
+        }
+      } catch {
+        alert('Invalid backup file. Please choose a valid WaffleMan JSON backup.')
+      }
+      // reset so same file can be imported again
+      if (importInputRef.current) importInputRef.current.value = ''
+    }
+    reader.readAsText(file)
+  }, [])
+
   const handlePublish = async () => {
     setPublishState('publishing')
     try {
@@ -232,11 +272,29 @@ function WaffleManApp() {
               </TabsContent>
             </Tabs>
 
+            {/* Hidden file input for import */}
+            <input
+              ref={importInputRef}
+              type="file"
+              accept=".json,application/json"
+              className="hidden"
+              onChange={handleImport}
+            />
+
             <div className="flex items-center justify-between pt-2 border-t border-[#21262d]">
               <span className="text-xs text-[#6e7681]">Changes are saved locally until you Publish</span>
-              <Button size="sm" variant="ghost" className="text-[#6e7681] hover:text-white text-xs h-7 px-2" onClick={() => { if (confirm('Reset to default ApeXhit data?')) { setItems(SEED); setPublishState('idle') } }}>
-                <RefreshCw className="w-3 h-3 mr-1" />Reset
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button size="sm" variant="ghost" title="Export backup" className="text-[#6e7681] hover:text-emerald-400 text-xs h-7 px-2" onClick={handleExport}>
+                  <Download className="w-3 h-3 mr-1" />Export
+                </Button>
+                <Button size="sm" variant="ghost" title="Import backup" className="text-[#6e7681] hover:text-cyan-400 text-xs h-7 px-2" onClick={() => importInputRef.current?.click()}>
+                  <Upload className="w-3 h-3 mr-1" />Import
+                </Button>
+                <div className="w-px h-4 bg-[#30363d] mx-0.5" />
+                <Button size="sm" variant="ghost" className="text-[#6e7681] hover:text-white text-xs h-7 px-2" onClick={() => { if (confirm('Reset to default ApeXhit data?')) { setItems(SEED); setPublishState('idle') } }}>
+                  <RefreshCw className="w-3 h-3 mr-1" />Reset
+                </Button>
+              </div>
             </div>
           </div>
 
