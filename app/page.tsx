@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback, useRef, type ChangeEvent } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -141,7 +141,7 @@ function WaffleManApp() {
     URL.revokeObjectURL(url)
   }, [items])
 
-  const handleImport = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
