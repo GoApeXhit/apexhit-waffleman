@@ -78,7 +78,6 @@ export async function saveWaffleData(data: WaffleData): Promise<void> {
         access: 'public',
         contentType: 'application/json',
         addRandomSuffix: false,
-        allowOverwrite: true,
       })
       global._waffleBlobUrl = blob.url  // cache the URL for this instance
     } catch (err) {
