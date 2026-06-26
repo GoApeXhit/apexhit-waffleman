@@ -189,7 +189,8 @@ function WaffleManApp() {
       <header className="sticky top-0 z-50 border-b border-[#21262d] bg-[#0d1117]/90 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <span className="text-2xl leading-none">🧇</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="WaffleMan" className="w-9 h-9 rounded-lg object-contain" />
             <div>
               <span className="text-base font-bold text-white tracking-tight">WaffleMan</span>
               <span className="ml-2 text-[11px] text-[#6e7681] font-medium">by ApeXhit</span>
